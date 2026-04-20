@@ -13,6 +13,7 @@ The initial command surface should be small and stable:
 ```bash
 agents-team list
 agents-team validate
+agents-team doctor [tool]
 agents-team render <tool> [agent]
 agents-team install <tool>
 agents-team update <tool>
@@ -54,6 +55,33 @@ Validation should distinguish errors from warnings.
 
 Errors block installation. Warnings should be visible but should not block unless
 the user passes a future strict flag.
+
+## `doctor`
+
+Runs a read-only diagnostic of the repository, target tools, and installation
+state.
+
+Examples:
+
+```bash
+agents-team doctor
+agents-team doctor all --project .
+agents-team doctor codex
+```
+
+Expected checks:
+
+- Python version.
+- `agents/` directory exists.
+- Canonical agents validate.
+- Target outputs render.
+- Global or project target directories resolve.
+- Target CLI commands are available on `PATH`, when applicable.
+- Installation dry-run detects files that would be created, updated, or skipped.
+
+`doctor` should exit with a non-zero code only for errors. Missing external CLI
+commands or existing manual files are warnings, because the generator may still
+be usable.
 
 ## `render`
 

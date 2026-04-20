@@ -50,6 +50,14 @@ Validate agents:
 agents-team validate
 ```
 
+Run an environment and installation diagnostic:
+
+```bash
+agents-team doctor
+agents-team doctor all --project .
+agents-team doctor codex
+```
+
 Render one agent:
 
 ```bash

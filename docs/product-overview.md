@@ -45,6 +45,7 @@ The expected user flow is:
 ```bash
 agents-team list
 agents-team validate
+agents-team doctor
 agents-team render codex
 agents-team install all
 agents-team update all

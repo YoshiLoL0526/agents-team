@@ -1,35 +1,18 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Annotated
 
 import typer
 
+from agents_team.diagnostics import build_doctor_report
 from agents_team.installer import install_agents
 from agents_team.rendering import render_agents, selected_tools
-from agents_team.schema import Agent, ValidationIssue
+from agents_team.schema import ValidationIssue
 from agents_team.validation import ensure_tool, has_errors, load_and_validate
 
 app = typer.Typer(
     help="Install one canonical team of AI agents into Codex, Claude Code, and OpenCode."
 )
-
-
-def repo_root_option(
-    root: Annotated[
-        Path,
-        typer.Option(
-            "--root",
-            help="Repository root containing the agents/ directory.",
-            exists=True,
-            file_okay=False,
-            dir_okay=True,
-            resolve_path=True,
-        ),
-    ] = Path("."),
-) -> Path:
-    return root
-
 
 @app.command("list")
 def list_agents(root: Path = typer.Option(Path("."), "--root", resolve_path=True)) -> None:
@@ -133,6 +116,40 @@ def update(
     _install_or_update(tool, root, project, dry_run, backup, force)
 
 
+@app.command()
+def doctor(
+    tool: str = typer.Argument("all", help="codex, claude, opencode, or all."),
+    root: Path = typer.Option(Path("."), "--root", resolve_path=True),
+    project: Path | None = typer.Option(
+        None,
+        "--project",
+        help="Check a project-local installation target instead of global.",
+        file_okay=False,
+        dir_okay=True,
+        resolve_path=True,
+    ),
+) -> None:
+    report = build_doctor_report(root, tool, project)
+
+    for check in report.checks:
+        typer.echo(f"{check.status}: {check.label}: {check.detail}")
+
+    _print_issues(report.validation_issues)
+
+    if report.install_results:
+        typer.echo("")
+        typer.echo("Install preview:")
+        for result in report.install_results:
+            typer.echo(
+                f"{result.action}: {result.rendered.tool}/{result.rendered.filename} -> {result.target_path}"
+            )
+            if result.message != "ok" and not result.message.startswith("dry"):
+                typer.echo(f"  {result.message}")
+
+    if report.has_errors:
+        raise typer.Exit(1)
+
+
 def _install_or_update(
     tool: str,
     root: Path,
@@ -174,8 +191,3 @@ def _print_issues(issues: list[ValidationIssue], warnings_only: bool = False) ->
             continue
         location = f"{issue.file}: " if issue.file else ""
         typer.echo(f"{issue.level.upper()}: {location}{issue.message}", err=True)
-
-
-def _agents_by_id(agents: list[Agent]) -> dict[str, Agent]:
-    return {agent.id: agent for agent in agents}
-

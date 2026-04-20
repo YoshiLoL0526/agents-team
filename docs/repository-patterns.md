@@ -16,6 +16,7 @@ agents/
 agents_team/
   __init__.py
   cli.py
+  diagnostics.py
   schema.py
   parser.py
   permissions.py
@@ -45,6 +46,18 @@ Owns command parsing, terminal output, and exit codes.
 
 The CLI should remain thin. It should call parser, validator, renderer, and
 installer services rather than implementing business logic inline.
+
+### `diagnostics.py`
+
+Owns read-only environment and installation diagnostics for `doctor`.
+
+Responsibilities:
+
+- Check Python runtime compatibility.
+- Check repository shape and validation status.
+- Check target directories.
+- Check target CLI availability.
+- Run installation previews without writing files.
 
 ### `schema.py`
 

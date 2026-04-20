@@ -50,6 +50,7 @@ def yaml_frontmatter(data: Mapping[str, Any]) -> str:
         sort_keys=False,
         allow_unicode=False,
         default_flow_style=False,
+        width=4096,
     ).strip()
 
 
@@ -102,4 +103,3 @@ def _toml_string(value: str) -> str:
         .replace("\t", "\\t")
     )
     return f'"{escaped}"'
-

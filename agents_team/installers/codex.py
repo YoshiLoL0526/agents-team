@@ -18,6 +18,9 @@ class CodexAdapter:
     def output_name(self, agent: Agent) -> str:
         return f"{agent.id}.toml"
 
+    def root_output_name(self) -> str:
+        return "AGENTS.md"
+
     def render(self, agent: Agent) -> str:
         body = apply_prompt_override(agent.body, agent.prompt_overrides.get(self.tool))
         data: dict[str, Any] = {

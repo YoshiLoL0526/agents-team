@@ -14,9 +14,13 @@ from agents_team.schema import Agent
 
 class ClaudeAdapter:
     tool = "claude"
+    supported_frontmatter_fields = {"name", "description", "tools"}
 
     def output_name(self, agent: Agent) -> str:
         return f"{agent.id}.md"
+
+    def root_output_name(self) -> str:
+        return "CLAUDE.md"
 
     def render(self, agent: Agent) -> str:
         body = apply_prompt_override(agent.body, agent.prompt_overrides.get(self.tool))
@@ -25,28 +29,70 @@ class ClaudeAdapter:
             "description": agent.description,
         }
 
-        model = agent.model.get(self.tool)
-        if model:
-            data["model"] = model
-
-        reasoning = agent.reasoning.get(self.tool)
-        if reasoning:
-            data["effort"] = reasoning
-
         data = merge_dicts(data, self._permissions(agent))
-        data = merge_dicts(data, agent.overrides.get(self.tool))
+        data = merge_dicts(data, self._supported_overrides(agent))
+
+        tools = data.get("tools")
+        if tools:
+            data["tools"] = _tools_csv(tools)
+        else:
+            data.pop("tools", None)
 
         return (
-            f"<!-- {GENERATED_MARKER} -->\n"
             "---\n"
+            f"# {GENERATED_MARKER}\n"
             f"{yaml_frontmatter(data)}\n"
             "---\n\n"
             f"{body.strip()}\n"
         )
 
+    def render_root(self, root_agent: Agent, agents: list[Agent]) -> str:
+        body = apply_prompt_override(
+            root_agent.body,
+            root_agent.prompt_overrides.get(self.tool),
+        )
+        subagents = [
+            agent
+            for agent in sorted(agents, key=lambda item: item.id)
+            if agent.enabled_for(self.tool) and agent.id != root_agent.id
+        ]
+        subagent_lines = "\n".join(
+            f"- `{agent.id}`: {agent.description}" for agent in subagents
+        )
+        return (
+            f"<!-- {GENERATED_MARKER} -->\n"
+            f"# Claude Code Root Orchestrator\n\n"
+            "You are the default orchestrator for this Claude Code environment.\n\n"
+            f"{body.strip()}\n\n"
+            "## Delegation Policy\n\n"
+            "Treat this file as the main-agent instruction source. The files in "
+            "`.claude/agents/` are specialized subagents, not alternate primary "
+            "agents.\n\n"
+            "For each user request, decide whether to handle the work directly or "
+            "delegate part of it with Claude Code's Task tool. Use subagents when "
+            "the task benefits from a specialist, separate context, focused review, "
+            "or independent research. Handle trivial edits, simple questions, and "
+            "blocking next steps directly.\n\n"
+            "When delegating, use the exact subagent name, give a concrete and "
+            "self-contained task, and integrate the result into one final response. "
+            "Do not delegate the same work to multiple subagents unless independent "
+            "perspectives are explicitly useful.\n\n"
+            "## Available Subagents\n\n"
+            f"{subagent_lines}\n"
+        )
+
+    def _supported_overrides(self, agent: Agent) -> dict[str, Any]:
+        overrides = agent.overrides.get(self.tool)
+        if not overrides:
+            return {}
+        return {
+            key: value
+            for key, value in overrides.items()
+            if key in self.supported_frontmatter_fields
+        }
+
     def _permissions(self, agent: Agent) -> dict[str, Any]:
         tools: list[str] = []
-        disallowed: list[str] = []
 
         if permission(agent, "read") == "allow":
             tools.append("Read")
@@ -55,30 +101,28 @@ class ClaudeAdapter:
 
         if permission(agent, "edit") == "allow":
             tools.extend(["Edit", "MultiEdit"])
-        elif permission(agent, "edit") == "deny":
-            disallowed.extend(["Edit", "MultiEdit"])
 
         if permission(agent, "write") == "allow":
             tools.append("Write")
-        elif permission(agent, "write") == "deny":
-            disallowed.append("Write")
 
         if permission(agent, "bash") == "allow":
             tools.append("Bash")
-        elif permission(agent, "bash") == "deny":
-            disallowed.append("Bash")
 
         if permission(agent, "webfetch") == "allow":
             tools.extend(["WebFetch", "WebSearch"])
-        elif permission(agent, "webfetch") == "deny":
-            disallowed.extend(["WebFetch", "WebSearch"])
 
         result: dict[str, Any] = {}
         if tools:
             result["tools"] = _unique(tools)
-        if disallowed:
-            result["disallowedTools"] = _unique(disallowed)
         return result
+
+
+def _tools_csv(value: Any) -> str:
+    if isinstance(value, str):
+        return value
+    if isinstance(value, list):
+        return ", ".join(str(item) for item in _unique([str(item) for item in value]))
+    return str(value)
 
 
 def _unique(values: list[str]) -> list[str]:
@@ -89,4 +133,3 @@ def _unique(values: list[str]) -> list[str]:
             result.append(value)
             seen.add(value)
     return result
-

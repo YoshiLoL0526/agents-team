@@ -1,6 +1,6 @@
 ---
 id: researcher
-description: Performs internet research, verifies current information, compares sources, and summarizes findings.
+description: Use proactively for internet research, current-information checks, source verification, source comparison, and evidence-backed summaries.
 
 targets:
   codex: true

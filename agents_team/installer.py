@@ -67,16 +67,24 @@ def install_agents(
 ) -> list[InstallResult]:
     results: list[InstallResult] = []
     tools = selected_tools(tool)
-    root_rendered: RenderedFile | None = None
-    if root_agent and "codex" not in tools:
-        raise ValueError("--root-agent is currently supported only for Codex installs")
+    root_rendered: dict[str, RenderedFile] = {}
     if root_agent:
-        root = find_agent(agents, root_agent, "codex")
-        root_rendered = render_root_agent(root, agents, "codex")
+        root_tools = [
+            selected_tool
+            for selected_tool in tools
+            if selected_tool in {"codex", "claude"}
+        ]
+        if not root_tools:
+            raise ValueError("--root-agent is currently supported only for Codex and Claude installs")
+        for selected_tool in root_tools:
+            root = find_agent(agents, root_agent, selected_tool)
+            root_rendered[selected_tool] = render_root_agent(root, agents, selected_tool)
 
     for selected_tool in tools:
         target_dir = install_dir(selected_tool, project)
         for rendered in render_agents(agents, selected_tool):
+            if root_agent and selected_tool == "claude" and rendered.agent_id == root_agent:
+                continue
             results.append(
                 install_rendered_file(
                     rendered,
@@ -87,27 +95,40 @@ def install_agents(
                 )
             )
 
-    if root_rendered:
-        codex_conflicts = [
-            result
-            for result in results
-            if result.rendered.tool == "codex" and result.action == "skipped"
-        ]
-        root_target_dir = root_install_dir("codex", project)
-        if codex_conflicts:
+    for selected_tool, selected_root_rendered in root_rendered.items():
+        if selected_tool == "codex":
+            codex_conflicts = [
+                result
+                for result in results
+                if result.rendered.tool == "codex" and result.action == "skipped"
+            ]
+            root_target_dir = root_install_dir("codex", project)
+            if codex_conflicts:
+                results.append(
+                    InstallResult(
+                        rendered=selected_root_rendered,
+                        target_path=root_target_dir / selected_root_rendered.filename,
+                        action="skipped",
+                        message="codex subagent conflicts must be resolved before writing root AGENTS.md",
+                    )
+                )
+                continue
+
             results.append(
-                InstallResult(
-                    rendered=root_rendered,
-                    target_path=root_target_dir / root_rendered.filename,
-                    action="skipped",
-                    message="codex subagent conflicts must be resolved before writing root AGENTS.md",
+                install_rendered_file(
+                    selected_root_rendered,
+                    root_target_dir,
+                    dry_run=dry_run,
+                    backup=backup,
+                    force=force,
                 )
             )
-            return results
+            continue
 
+        root_target_dir = root_install_dir(selected_tool, project)
         results.append(
             install_rendered_file(
-                root_rendered,
+                selected_root_rendered,
                 root_target_dir,
                 dry_run=dry_run,
                 backup=backup,

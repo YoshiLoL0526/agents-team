@@ -12,6 +12,7 @@ def test_project_install_paths(tmp_path: Path) -> None:
     assert install_dir("claude", tmp_path) == tmp_path / ".claude" / "agents"
     assert install_dir("opencode", tmp_path) == tmp_path / ".opencode" / "agents"
     assert root_install_dir("codex", tmp_path) == tmp_path
+    assert root_install_dir("claude", tmp_path) == tmp_path
 
 
 def test_global_codex_paths_respect_codex_home(tmp_path: Path, monkeypatch) -> None:
@@ -110,3 +111,27 @@ def test_install_codex_root_agent_skips_when_subagent_conflicts(tmp_path: Path) 
     assert root_result.action == "skipped"
     assert "subagent conflicts" in root_result.message
     assert not (tmp_path / "AGENTS.md").exists()
+
+
+def test_install_claude_root_agent_to_project(tmp_path: Path) -> None:
+    agents, issues = load_agents(Path("."))
+    assert issues == []
+
+    results = install_agents(agents, "claude", project=tmp_path, root_agent="orchestrator")
+
+    root_result = next(result for result in results if result.rendered.filename == "CLAUDE.md")
+    assert root_result.action == "created"
+    assert root_result.target_path == tmp_path / "CLAUDE.md"
+    assert "Claude Code Root Orchestrator" in root_result.target_path.read_text(encoding="utf-8")
+    assert not (tmp_path / ".claude" / "agents" / "orchestrator.md").exists()
+    assert (tmp_path / ".claude" / "agents" / "builder.md").exists()
+
+
+def test_install_all_root_agent_includes_codex_and_claude_roots(tmp_path: Path) -> None:
+    agents, issues = load_agents(Path("."))
+    assert issues == []
+
+    results = install_agents(agents, "all", project=tmp_path, root_agent="orchestrator")
+
+    filenames = {result.rendered.tool: result.rendered.filename for result in results if result.rendered.filename in {"AGENTS.md", "CLAUDE.md"}}
+    assert filenames == {"codex": "AGENTS.md", "claude": "CLAUDE.md"}

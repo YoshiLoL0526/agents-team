@@ -60,7 +60,7 @@ def render(
     root_agent: str | None = typer.Option(
         None,
         "--root-agent",
-        help="Render a Codex root AGENTS.md file from the selected agent.",
+        help="Render root instructions from the selected agent, where supported.",
     ),
 ) -> None:
     ensure_tool(tool)
@@ -68,20 +68,20 @@ def render(
     _exit_if_invalid(issues)
 
     if root_agent:
-        if tool != "codex":
-            typer.echo("--root-agent is currently supported only for codex.", err=True)
+        if tool not in {"codex", "claude"}:
+            typer.echo("--root-agent is currently supported only for codex and claude.", err=True)
             raise typer.Exit(1)
         try:
-            selected_root = find_agent(agents, root_agent, "codex")
+            selected_root = find_agent(agents, root_agent, tool)
         except ValueError as exc:
             typer.echo(str(exc), err=True)
             raise typer.Exit(1) from exc
-        rendered_root = render_root_agent(selected_root, agents, "codex")
+        rendered_root = render_root_agent(selected_root, agents, tool)
         if out:
             out.mkdir(parents=True, exist_ok=True)
             target = out / rendered_root.filename
             target.write_text(rendered_root.content, encoding="utf-8")
-            typer.echo(f"rendered codex/{rendered_root.filename} -> {target}")
+            typer.echo(f"rendered {tool}/{rendered_root.filename} -> {target}")
             return
         typer.echo(rendered_root.content, nl=False)
         return
@@ -125,7 +125,7 @@ def install(
     root_agent: str | None = typer.Option(
         None,
         "--root-agent",
-        help="Also install a Codex root AGENTS.md file from this agent id.",
+        help="Also install root instructions from this agent id, where supported.",
     ),
 ) -> None:
     _install_or_update(tool, root, project, dry_run, backup, force, root_agent)
@@ -149,7 +149,7 @@ def update(
     root_agent: str | None = typer.Option(
         None,
         "--root-agent",
-        help="Also update a Codex root AGENTS.md file from this agent id.",
+        help="Also update root instructions from this agent id, where supported.",
     ),
 ) -> None:
     _install_or_update(tool, root, project, dry_run, backup, force, root_agent)
@@ -170,7 +170,7 @@ def doctor(
     root_agent: str | None = typer.Option(
         None,
         "--root-agent",
-        help="Include a Codex root AGENTS.md install preview for this agent id.",
+        help="Include a root-instructions install preview for this agent id.",
     ),
 ) -> None:
     try:

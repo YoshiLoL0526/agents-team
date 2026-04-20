@@ -31,15 +31,17 @@ def render_agent(agent: Agent, tool: str) -> RenderedFile:
 
 
 def render_root_agent(root_agent: Agent, agents: list[Agent], tool: str) -> RenderedFile:
-    if tool != "codex":
+    adapter = ADAPTERS[tool]
+    render_root = getattr(adapter, "render_root", None)
+    root_output_name = getattr(adapter, "root_output_name", None)
+    if render_root is None or root_output_name is None:
         raise ValueError(f"Root agent rendering is not supported for {tool}")
 
-    adapter = ADAPTERS[tool]
     return RenderedFile(
         tool=tool,
         agent_id=root_agent.id,
-        filename="AGENTS.md",
-        content=adapter.render_root(root_agent, agents),
+        filename=root_output_name(),
+        content=render_root(root_agent, agents),
     )
 
 

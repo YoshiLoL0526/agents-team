@@ -100,8 +100,9 @@ settings.
 
 ## Claude Code Mapping
 
-Claude Code permissions can be represented through native fields such as tools,
-disallowed tools, and permission mode.
+Claude Code permissions can be represented through the native `tools` field.
+The documented subagent schema supports only `name`, `description`, and an
+optional comma-separated `tools` list in YAML frontmatter.
 
 Suggested starting rules:
 
@@ -109,11 +110,14 @@ Suggested starting rules:
 | --- | --- |
 | `read: allow` | allow `Read` |
 | `search: allow` | allow `Glob`, `Grep` |
-| `edit: deny` | disallow `Edit`, `MultiEdit` |
-| `write: deny` | disallow `Write` |
-| `bash: deny` | disallow `Bash` |
-| `bash: ask` | do not grant unrestricted Bash |
-| `webfetch: deny` | disallow web fetch tool if available |
+| `edit: allow` | allow `Edit`, `MultiEdit` |
+| `write: allow` | allow `Write` |
+| `bash: allow` | allow `Bash` |
+| `webfetch: allow` | allow `WebFetch`, `WebSearch` |
+
+Denied and ask-level permissions are handled conservatively by not adding those
+tools to the allow-list. `overrides.claude.tools` can be used when a Claude Code
+agent needs an exact tool list.
 
 Exact Claude Code tool names should be kept in adapter code and revised when
 the official schema changes.
@@ -143,8 +147,7 @@ overrides:
   codex:
     sandbox_mode: read-only
   claude:
-    disallowedTools:
-      - Bash
+    tools: Read, Glob, Grep
   opencode:
     permission:
       edit: deny
@@ -166,4 +169,3 @@ The validator should catch:
 
 Conflicts should warn by default. They should fail only when the generated output
 would be misleading or unsafe.
-

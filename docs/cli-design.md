@@ -92,6 +92,7 @@ Examples:
 ```bash
 agents-team render codex
 agents-team render codex --root-agent orchestrator
+agents-team render claude --root-agent orchestrator
 agents-team render claude reviewer
 agents-team render opencode builder --out generated/
 ```
@@ -106,6 +107,8 @@ Expected behavior:
   contents in a readable format or require `--out`.
 - If `--root-agent <id>` is provided for Codex, render `AGENTS.md` root
   instructions from that agent instead of a subagent TOML file.
+- If `--root-agent <id>` is provided for Claude Code, render `CLAUDE.md`
+  main-session instructions from that agent instead of a subagent file.
 
 ## `install`
 
@@ -117,6 +120,7 @@ Examples:
 agents-team install codex
 agents-team install codex --root-agent orchestrator
 agents-team install claude
+agents-team install claude --root-agent orchestrator
 agents-team install opencode
 agents-team install all
 ```
@@ -140,7 +144,7 @@ Examples:
 agents-team update all
 agents-team update codex
 agents-team update codex --root-agent orchestrator
-agents-team update claude --project .
+agents-team update claude --root-agent orchestrator --project .
 ```
 
 For MVP, `update` may share implementation with `install`.
@@ -156,6 +160,7 @@ created, and removed files.
 Codex:       ~/.codex/agents/
 Codex root:  ~/.codex/AGENTS.md
 Claude Code: ~/.claude/agents/
+Claude Code root: ~/.claude/CLAUDE.md
 OpenCode:    ~/.config/opencode/agents/
 ```
 
@@ -165,6 +170,7 @@ OpenCode:    ~/.config/opencode/agents/
 Codex:       <project>/.codex/agents/
 Codex root:  <project>/AGENTS.md
 Claude Code: <project>/.claude/agents/
+Claude Code root: <project>/CLAUDE.md
 OpenCode:    <project>/.opencode/agents/
 ```
 

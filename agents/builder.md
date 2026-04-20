@@ -1,6 +1,6 @@
 ---
 id: builder
-description: Implements scoped features, fixes, refactors, and tests while following existing project patterns.
+description: Use proactively for scoped implementation tasks, bug fixes, refactors, and tests that should follow existing project patterns.
 
 targets:
   codex: true

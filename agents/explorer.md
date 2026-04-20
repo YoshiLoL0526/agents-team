@@ -1,6 +1,6 @@
 ---
 id: explorer
-description: Inspects codebases, maps architecture, finds relevant files, and explains existing behavior.
+description: Use proactively for read-only codebase inspection, architecture mapping, relevant file discovery, and existing-behavior explanations.
 
 targets:
   codex: true

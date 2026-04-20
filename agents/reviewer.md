@@ -1,6 +1,6 @@
 ---
 id: reviewer
-description: Reviews code for correctness, security, regressions, maintainability risks, and missing tests.
+description: Use proactively for code review focused on correctness, security, regressions, maintainability risks, and missing tests.
 
 targets:
   codex: true

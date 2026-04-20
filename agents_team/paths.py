@@ -40,10 +40,13 @@ def codex_home() -> Path:
 
 
 def root_install_dir(tool: str, project: Path | None = None) -> Path:
-    if tool != "codex":
+    if tool not in {"codex", "claude"}:
         raise ValueError(f"Root agent installation is not supported for {tool}")
 
     if project is not None:
         return project.expanduser().resolve()
+
+    if tool == "claude":
+        return Path.home() / ".claude"
 
     return codex_home()

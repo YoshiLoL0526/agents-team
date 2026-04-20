@@ -42,6 +42,7 @@ def build_doctor_report(
     root: Path,
     tool: str = "all",
     project: Path | None = None,
+    root_agent: str | None = None,
 ) -> DoctorReport:
     ensure_tool(tool)
     checks: list[DoctorCheck] = []
@@ -99,6 +100,7 @@ def build_doctor_report(
             tool,
             project=project,
             dry_run=True,
+            root_agent=root_agent,
         )
         skipped = [result for result in install_results if result.action == "skipped"]
         if skipped:

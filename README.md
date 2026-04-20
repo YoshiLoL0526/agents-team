@@ -77,6 +77,7 @@ Install globally:
 ```bash
 agents-team install all
 agents-team install codex
+agents-team install codex --root-agent orchestrator
 agents-team install claude
 agents-team install opencode
 ```
@@ -97,6 +98,7 @@ Update installed agents from the current repository:
 
 ```bash
 agents-team update all
+agents-team update codex --root-agent orchestrator
 ```
 
 ## Default Install Locations
@@ -105,6 +107,7 @@ Global:
 
 ```text
 Codex:       ~/.codex/agents/
+Codex root:  ~/.codex/AGENTS.md
 Claude Code: ~/.claude/agents/
 OpenCode:    ~/.config/opencode/agents/
 ```
@@ -113,6 +116,7 @@ Project:
 
 ```text
 Codex:       <project>/.codex/agents/
+Codex root:  <project>/AGENTS.md
 Claude Code: <project>/.claude/agents/
 OpenCode:    <project>/.opencode/agents/
 ```

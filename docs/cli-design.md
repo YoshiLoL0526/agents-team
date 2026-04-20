@@ -91,6 +91,7 @@ Examples:
 
 ```bash
 agents-team render codex
+agents-team render codex --root-agent orchestrator
 agents-team render claude reviewer
 agents-team render opencode builder --out generated/
 ```
@@ -103,6 +104,8 @@ Expected behavior:
 - If `--out` is omitted and one agent is selected, print the generated file.
 - If `--out` is omitted and multiple agents are selected, print filenames and
   contents in a readable format or require `--out`.
+- If `--root-agent <id>` is provided for Codex, render `AGENTS.md` root
+  instructions from that agent instead of a subagent TOML file.
 
 ## `install`
 
@@ -112,6 +115,7 @@ Examples:
 
 ```bash
 agents-team install codex
+agents-team install codex --root-agent orchestrator
 agents-team install claude
 agents-team install opencode
 agents-team install all
@@ -135,6 +139,7 @@ Examples:
 ```bash
 agents-team update all
 agents-team update codex
+agents-team update codex --root-agent orchestrator
 agents-team update claude --project .
 ```
 
@@ -149,6 +154,7 @@ created, and removed files.
 
 ```text
 Codex:       ~/.codex/agents/
+Codex root:  ~/.codex/AGENTS.md
 Claude Code: ~/.claude/agents/
 OpenCode:    ~/.config/opencode/agents/
 ```
@@ -157,6 +163,7 @@ OpenCode:    ~/.config/opencode/agents/
 
 ```text
 Codex:       <project>/.codex/agents/
+Codex root:  <project>/AGENTS.md
 Claude Code: <project>/.claude/agents/
 OpenCode:    <project>/.opencode/agents/
 ```

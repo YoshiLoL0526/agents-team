@@ -4,8 +4,8 @@ from datetime import datetime
 from pathlib import Path
 
 from agents_team.installers.common import GENERATED_MARKER
-from agents_team.paths import install_dir
-from agents_team.rendering import render_agents, selected_tools
+from agents_team.paths import install_dir, root_install_dir
+from agents_team.rendering import find_agent, render_agents, render_root_agent, selected_tools
 from agents_team.schema import Agent, InstallResult, RenderedFile
 
 
@@ -21,7 +21,7 @@ def install_rendered_file(
 
     if target_path.exists():
         existing = target_path.read_text(encoding="utf-8")
-        if GENERATED_MARKER not in existing and not force:
+        if GENERATED_MARKER not in existing and existing.strip() and not force:
             return InstallResult(
                 rendered=rendered,
                 target_path=target_path,
@@ -63,9 +63,18 @@ def install_agents(
     dry_run: bool = False,
     backup: bool = False,
     force: bool = False,
+    root_agent: str | None = None,
 ) -> list[InstallResult]:
     results: list[InstallResult] = []
-    for selected_tool in selected_tools(tool):
+    tools = selected_tools(tool)
+    root_rendered: RenderedFile | None = None
+    if root_agent and "codex" not in tools:
+        raise ValueError("--root-agent is currently supported only for Codex installs")
+    if root_agent:
+        root = find_agent(agents, root_agent, "codex")
+        root_rendered = render_root_agent(root, agents, "codex")
+
+    for selected_tool in tools:
         target_dir = install_dir(selected_tool, project)
         for rendered in render_agents(agents, selected_tool):
             results.append(
@@ -77,10 +86,37 @@ def install_agents(
                     force=force,
                 )
             )
+
+    if root_rendered:
+        codex_conflicts = [
+            result
+            for result in results
+            if result.rendered.tool == "codex" and result.action == "skipped"
+        ]
+        root_target_dir = root_install_dir("codex", project)
+        if codex_conflicts:
+            results.append(
+                InstallResult(
+                    rendered=root_rendered,
+                    target_path=root_target_dir / root_rendered.filename,
+                    action="skipped",
+                    message="codex subagent conflicts must be resolved before writing root AGENTS.md",
+                )
+            )
+            return results
+
+        results.append(
+            install_rendered_file(
+                root_rendered,
+                root_target_dir,
+                dry_run=dry_run,
+                backup=backup,
+                force=force,
+            )
+        )
     return results
 
 
 def backup_file_path(path: Path) -> Path:
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
     return path.with_name(f"{path.name}.{timestamp}.bak")
-

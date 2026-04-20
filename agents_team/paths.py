@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 from agents_team.schema import TOOLS
@@ -24,9 +25,25 @@ def install_dir(tool: str, project: Path | None = None) -> Path:
 
     home = Path.home()
     global_dirs = {
-        "codex": home / ".codex" / "agents",
+        "codex": codex_home() / "agents",
         "claude": home / ".claude" / "agents",
         "opencode": home / ".config" / "opencode" / "agents",
     }
     return global_dirs[tool]
 
+
+def codex_home() -> Path:
+    configured_home = os.environ.get("CODEX_HOME")
+    if configured_home:
+        return Path(configured_home).expanduser().resolve()
+    return Path.home() / ".codex"
+
+
+def root_install_dir(tool: str, project: Path | None = None) -> Path:
+    if tool != "codex":
+        raise ValueError(f"Root agent installation is not supported for {tool}")
+
+    if project is not None:
+        return project.expanduser().resolve()
+
+    return codex_home()

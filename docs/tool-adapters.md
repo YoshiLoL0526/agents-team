@@ -11,23 +11,33 @@ Official documentation: <https://developers.openai.com/codex/subagents>
 ### Native Format
 
 Codex subagents use TOML files.
+Codex root-agent behavior uses `AGENTS.md`, because custom agent TOML files are
+spawnable subagents rather than replacements for the root Codex session.
 
 Global location:
 
 ```text
 ~/.codex/agents/
+~/.codex/AGENTS.md
 ```
 
 Project location:
 
 ```text
 <project>/.codex/agents/
+<project>/AGENTS.md
 ```
 
 ### Generated File
 
 ```text
 ~/.codex/agents/reviewer.toml
+```
+
+Optional root-agent output:
+
+```text
+~/.codex/AGENTS.md
 ```
 
 ### Field Mapping
@@ -39,8 +49,13 @@ Project location:
 | Markdown body | `developer_instructions` |
 | `model.codex` | `model` |
 | `reasoning.codex` | `model_reasoning_effort` |
-| `permissions` | best-effort sandbox and native permission settings |
+| `permissions` | best-effort `sandbox_mode` mapping |
 | `overrides.codex` | merged into TOML output |
+
+When `--root-agent <id>` is used, Agents Team also renders the selected agent
+as Codex root instructions in `AGENTS.md`. That file includes the selected
+agent's prompt plus a generated delegation policy and the list of available
+Codex subagents.
 
 ### Example Output
 
@@ -196,4 +211,3 @@ Examples:
 - A denied permission that cannot be enforced should produce a warning.
 - A model name that is unknown to the target may produce a warning.
 - A reasoning value unsupported by the target may be omitted with a warning.
-

@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from agents_team.installers.common import (
+    GENERATED_MARKER,
     apply_prompt_override,
     merge_dicts,
     render_toml,
@@ -37,13 +38,48 @@ class CodexAdapter:
         if sandbox_mode:
             data["sandbox_mode"] = sandbox_mode
 
-        if permission(agent, "network") == "allow":
-            data["network_access"] = True
-        elif permission(agent, "network") == "deny":
-            data["network_access"] = False
-
         data = merge_dicts(data, agent.overrides.get(self.tool))
         return render_toml(data)
+
+    def render_root(self, root_agent: Agent, agents: list[Agent]) -> str:
+        body = apply_prompt_override(
+            root_agent.body,
+            root_agent.prompt_overrides.get(self.tool),
+        )
+        subagents = [
+            agent
+            for agent in sorted(agents, key=lambda item: item.id)
+            if agent.enabled_for(self.tool)
+        ]
+        subagent_lines = "\n".join(
+            f"- `{agent.id}`: {agent.description}" for agent in subagents
+        )
+
+        return (
+            f"<!-- {GENERATED_MARKER} -->\n"
+            "# Codex Root Orchestrator\n\n"
+            "You are the default orchestrator for this Codex environment.\n\n"
+            f"{body.strip()}\n\n"
+            "## Delegation Policy\n\n"
+            "For each user request, decide whether to handle the work directly or "
+            "delegate part of it to a subagent. Use subagents when the task benefits "
+            "from parallel work, specialized review, independent research, or clear "
+            "implementation ownership. Handle trivial edits, simple questions, and "
+            "blocking next steps directly.\n\n"
+            "Treat these standing root instructions as the user's default request "
+            "for orchestration. When the delegation criteria are met, spawn the "
+            "appropriate subagents without asking for another explicit confirmation "
+            "unless the task itself is risky, destructive, or ambiguous.\n\n"
+            "When delegating, keep each subtask concrete, self-contained, and useful "
+            "to the user's goal. Assign clear ownership, avoid duplicate work between "
+            "agents, and integrate completed results into one final response.\n\n"
+            "## Available Subagents\n\n"
+            f"{subagent_lines}\n\n"
+            "Use these exact agent ids when spawning custom subagents. Prefer "
+            "`explorer` for read-only codebase mapping, `builder` for scoped "
+            "implementation, `reviewer` for correctness and regression review, and "
+            "`researcher` for current external information or documentation checks.\n"
+        )
 
     def _sandbox_mode(self, agent: Agent) -> str | None:
         if (
@@ -59,4 +95,3 @@ class CodexAdapter:
             return "workspace-write"
 
         return None
-

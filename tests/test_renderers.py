@@ -3,7 +3,8 @@ from pathlib import Path
 import yaml
 
 from agents_team.parser import parse_agent_file
-from agents_team.rendering import render_agent
+from agents_team.parser import load_agents
+from agents_team.rendering import render_agent, render_root_agent
 
 
 def test_renders_codex_toml() -> None:
@@ -14,6 +15,24 @@ def test_renders_codex_toml() -> None:
     assert 'name = "reviewer"' in rendered.content
     assert 'sandbox_mode = "read-only"' in rendered.content
     assert "developer_instructions" in rendered.content
+    assert "network_access" not in rendered.content
+
+
+def test_renders_codex_root_agent_markdown() -> None:
+    agents, issues = load_agents(Path("."))
+    assert issues == []
+    root = next(agent for agent in agents if agent.id == "orchestrator")
+
+    rendered = render_root_agent(root, agents, "codex")
+
+    assert rendered.filename == "AGENTS.md"
+    assert "Codex Root Orchestrator" in rendered.content
+    assert "You are the default orchestrator" in rendered.content
+    assert "default request for orchestration" in rendered.content
+    assert "`builder`" in rendered.content
+    assert "`explorer`" in rendered.content
+    assert "`reviewer`" in rendered.content
+    assert "`researcher`" in rendered.content
 
 
 def test_renders_claude_markdown() -> None:
@@ -38,4 +57,3 @@ def test_renders_opencode_markdown() -> None:
     data = yaml.safe_load(frontmatter)
     assert data["mode"] == "subagent"
     assert data["permission"]["webfetch"] == "allow"
-

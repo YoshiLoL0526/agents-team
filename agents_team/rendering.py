@@ -30,6 +30,19 @@ def render_agent(agent: Agent, tool: str) -> RenderedFile:
     )
 
 
+def render_root_agent(root_agent: Agent, agents: list[Agent], tool: str) -> RenderedFile:
+    if tool != "codex":
+        raise ValueError(f"Root agent rendering is not supported for {tool}")
+
+    adapter = ADAPTERS[tool]
+    return RenderedFile(
+        tool=tool,
+        agent_id=root_agent.id,
+        filename="AGENTS.md",
+        content=adapter.render_root(root_agent, agents),
+    )
+
+
 def render_agents(
     agents: list[Agent],
     tool: str,
@@ -45,3 +58,13 @@ def render_agents(
             rendered.append(render_agent(agent, selected_tool))
     return rendered
 
+
+def find_agent(agents: list[Agent], agent_id: str, tool: str | None = None) -> Agent:
+    for agent in agents:
+        if agent.id != agent_id:
+            continue
+        if tool and not agent.enabled_for(tool):
+            break
+        return agent
+    target = f" for {tool}" if tool else ""
+    raise ValueError(f"Agent not found or not enabled{target}: {agent_id}")

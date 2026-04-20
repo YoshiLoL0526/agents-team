@@ -29,6 +29,7 @@ def test_renders_codex_root_agent_markdown() -> None:
     assert rendered.filename == "AGENTS.md"
     assert "Codex Root Orchestrator" in rendered.content
     assert "You are the default orchestrator" in rendered.content
+    assert "Model preference: use `gpt-5.4`" in rendered.content
     assert "default request for orchestration" in rendered.content
     assert "`builder`" in rendered.content
     assert "`explorer`" in rendered.content
@@ -46,6 +47,7 @@ def test_renders_claude_root_agent_markdown() -> None:
     assert rendered.filename == "CLAUDE.md"
     assert "Claude Code Root Orchestrator" in rendered.content
     assert "You are the default orchestrator" in rendered.content
+    assert "Model preference: use `opus`" in rendered.content
     assert "`.claude/agents/` are specialized subagents" in rendered.content
     assert "`builder`" in rendered.content
     assert "`explorer`" in rendered.content
@@ -63,8 +65,9 @@ def test_renders_claude_markdown() -> None:
     frontmatter = rendered.content.split("---", 2)[1]
     data = yaml.safe_load(frontmatter)
     assert data["name"] == "reviewer"
+    assert data["model"] == "sonnet"
     assert data["tools"] == "Read, Glob, Grep, Bash"
-    assert set(data) == {"name", "description", "tools"}
+    assert set(data) == {"name", "description", "model", "tools"}
 
 
 def test_renders_opencode_markdown() -> None:
@@ -75,8 +78,17 @@ def test_renders_opencode_markdown() -> None:
     frontmatter = rendered.content.split("---", 2)[1]
     data = yaml.safe_load(frontmatter)
     assert data["mode"] == "subagent"
-    assert data["model"] == "openai/gpt-5.4"
+    assert data["model"] == "openai/gpt-5.4-mini"
     assert data["permission"]["webfetch"] == "allow"
+
+
+def test_renders_opencode_coding_agent_model() -> None:
+    agent = parse_agent_file(Path("agents/reviewer.md"))
+    rendered = render_agent(agent, "opencode")
+
+    frontmatter = rendered.content.split("---", 2)[1]
+    data = yaml.safe_load(frontmatter)
+    assert data["model"] == "openai/gpt-5.3-codex"
 
 
 def test_renders_opencode_orchestrator_as_primary_agent() -> None:

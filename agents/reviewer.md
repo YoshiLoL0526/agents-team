@@ -8,9 +8,9 @@ targets:
   opencode: true
 
 model:
-  codex: gpt-5.4
+  codex: gpt-5.3-codex
   claude: sonnet
-  opencode: openai/gpt-5.4
+  opencode: openai/gpt-5.3-codex
 
 reasoning:
   codex: high

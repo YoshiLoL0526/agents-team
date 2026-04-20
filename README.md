@@ -137,6 +137,11 @@ targets:
   claude: true
   opencode: true
 
+model:
+  codex: gpt-5.3-codex
+  claude: sonnet
+  opencode: openai/gpt-5.3-codex
+
 permissions:
   read: allow
   search: allow

@@ -9,7 +9,7 @@ targets:
 
 model:
   codex: gpt-5.4
-  claude: sonnet
+  claude: opus
   opencode: openai/gpt-5.4
 
 reasoning:

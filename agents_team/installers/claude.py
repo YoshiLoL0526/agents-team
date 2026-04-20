@@ -14,7 +14,7 @@ from agents_team.schema import Agent
 
 class ClaudeAdapter:
     tool = "claude"
-    supported_frontmatter_fields = {"name", "description", "tools"}
+    supported_frontmatter_fields = {"name", "description", "model", "tools"}
 
     def output_name(self, agent: Agent) -> str:
         return f"{agent.id}.md"
@@ -28,6 +28,10 @@ class ClaudeAdapter:
             "name": agent.id,
             "description": agent.description,
         }
+
+        model = agent.model.get(self.tool)
+        if model:
+            data["model"] = model
 
         data = merge_dicts(data, self._permissions(agent))
         data = merge_dicts(data, self._supported_overrides(agent))
@@ -59,10 +63,18 @@ class ClaudeAdapter:
         subagent_lines = "\n".join(
             f"- `{agent.id}`: {agent.description}" for agent in subagents
         )
+        model = root_agent.model.get(self.tool)
+        model_preference = (
+            f"Model preference: use `{model}` for this root orchestrator session "
+            "when the target tool supports selecting the main model.\n\n"
+            if model
+            else ""
+        )
         return (
             f"<!-- {GENERATED_MARKER} -->\n"
             f"# Claude Code Root Orchestrator\n\n"
             "You are the default orchestrator for this Claude Code environment.\n\n"
+            f"{model_preference}"
             f"{body.strip()}\n\n"
             "## Delegation Policy\n\n"
             "Treat this file as the main-agent instruction source. The files in "

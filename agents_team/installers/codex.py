@@ -57,11 +57,19 @@ class CodexAdapter:
         subagent_lines = "\n".join(
             f"- `{agent.id}`: {agent.description}" for agent in subagents
         )
+        model = root_agent.model.get(self.tool)
+        model_preference = (
+            f"Model preference: use `{model}` for this root orchestrator session "
+            "when the target tool supports selecting the main model.\n\n"
+            if model
+            else ""
+        )
 
         return (
             f"<!-- {GENERATED_MARKER} -->\n"
             "# Codex Root Orchestrator\n\n"
             "You are the default orchestrator for this Codex environment.\n\n"
+            f"{model_preference}"
             f"{body.strip()}\n\n"
             "## Delegation Policy\n\n"
             "For each user request, decide whether to handle the work directly or "

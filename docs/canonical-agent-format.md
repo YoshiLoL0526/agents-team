@@ -25,9 +25,9 @@ targets:
   opencode: true
 
 model:
-  codex: gpt-5.4
+  codex: gpt-5.3-codex
   claude: sonnet
-  opencode: openai/gpt-5.4
+  opencode: openai/gpt-5.3-codex
 
 reasoning:
   codex: high
@@ -112,9 +112,9 @@ Tool-specific model preference.
 
 ```yaml
 model:
-  codex: gpt-5.4
+  codex: gpt-5.3-codex
   claude: sonnet
-  opencode: openai/gpt-5.4
+  opencode: openai/gpt-5.3-codex
 ```
 
 Model names are intentionally not normalized because providers and tools use

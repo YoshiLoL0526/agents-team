@@ -1,3 +1,4 @@
+from dataclasses import replace
 from pathlib import Path
 
 import yaml
@@ -56,4 +57,28 @@ def test_renders_opencode_markdown() -> None:
     frontmatter = rendered.content.split("---", 2)[1]
     data = yaml.safe_load(frontmatter)
     assert data["mode"] == "subagent"
+    assert data["model"] == "openai/gpt-5.4"
     assert data["permission"]["webfetch"] == "allow"
+
+
+def test_renders_opencode_orchestrator_as_primary_agent() -> None:
+    agent = parse_agent_file(Path("agents/orchestrator.md"))
+    rendered = render_agent(agent, "opencode")
+
+    assert rendered.filename == "orchestrator.md"
+    frontmatter = rendered.content.split("---", 2)[1]
+    data = yaml.safe_load(frontmatter)
+    assert data["mode"] == "primary"
+    assert data["model"] == "openai/gpt-5.4"
+    assert data["permission"]["task"] == {"*": "deny"}
+
+
+def test_renders_opencode_agents_as_subagents_by_default() -> None:
+    agent = parse_agent_file(Path("agents/reviewer.md"))
+    agent_without_override = replace(agent, overrides={})
+
+    rendered = render_agent(agent_without_override, "opencode")
+
+    frontmatter = rendered.content.split("---", 2)[1]
+    data = yaml.safe_load(frontmatter)
+    assert data["mode"] == "subagent"

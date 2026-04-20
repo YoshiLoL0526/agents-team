@@ -10,7 +10,7 @@ targets:
 model:
   codex: gpt-5.4
   claude: sonnet
-  opencode: anthropic/claude-sonnet-4-20250514
+  opencode: openai/gpt-5.4
 
 reasoning:
   codex: medium
@@ -58,4 +58,3 @@ file.
 
 Do not edit files. If you notice a likely bug, risky pattern, or missing test,
 report it with the relevant path and the reason it matters.
-

@@ -138,7 +138,10 @@ Official documentation: <https://opencode.ai/docs/agents/>
 
 ### Native Format
 
-OpenCode agents use Markdown files with YAML frontmatter.
+OpenCode agents use Markdown files with YAML frontmatter. OpenCode supports
+`primary`, `subagent`, and `all` modes; primary agents are the main agents you
+switch between in the UI, while subagents are invoked by primary agents or via
+`@` mention.
 
 Global location:
 
@@ -172,13 +175,20 @@ OpenCode derives the agent name from the filename.
 | `permissions` | `permission` mapping |
 | `overrides.opencode` | merged into YAML frontmatter |
 
+The OpenCode adapter defaults generated agents to `mode: subagent` so helpers
+are not selectable as primary agents. Set `overrides.opencode.mode` to
+`primary` only for a selectable primary agent.
+
+To require manual `@` mentions instead of automatic Task invocation, set
+`overrides.opencode.permission.task` to deny the relevant subagent patterns.
+
 ### Example Output
 
 ```markdown
 ---
 description: Reviews code for correctness, security, regressions, and missing tests.
 mode: subagent
-model: anthropic/claude-sonnet-4-20250514
+model: openai/gpt-5.4
 permission:
   edit: deny
   bash: ask

@@ -10,7 +10,7 @@ targets:
 model:
   codex: gpt-5.4
   claude: sonnet
-  opencode: anthropic/claude-sonnet-4-20250514
+  opencode: openai/gpt-5.4
 
 reasoning:
   codex: medium
@@ -58,4 +58,3 @@ the assigned task, and avoid unrelated refactors.
 When modifying behavior, update or add focused tests that cover the risk. Before
 finishing, explain what changed, how it was verified, and anything that remains
 uncertain.
-

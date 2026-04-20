@@ -10,7 +10,7 @@ targets:
 model:
   codex: gpt-5.4
   claude: sonnet
-  opencode: anthropic/claude-sonnet-4-20250514
+  opencode: openai/gpt-5.4
 
 reasoning:
   codex: high
@@ -59,4 +59,3 @@ real maintainability or correctness risk.
 Lead with concrete findings. For each issue, explain the impact, the affected
 path or behavior, and the smallest practical fix. If no blocking issue is found,
 say that clearly and call out any residual risk or test gap.
-

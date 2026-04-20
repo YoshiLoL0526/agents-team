@@ -10,7 +10,7 @@ targets:
 model:
   codex: gpt-5.4
   claude: sonnet
-  opencode: anthropic/claude-sonnet-4-20250514
+  opencode: openai/gpt-5.4
 
 reasoning:
   codex: high
@@ -60,4 +60,3 @@ facts from inference, and cite the sources that support important claims.
 
 When research is inconclusive, say what was checked, what evidence was missing,
 and what would be needed to resolve the question.
-

@@ -53,4 +53,3 @@ class OpenCodeAdapter:
                 mapped[target] = value
 
         return {"permission": mapped} if mapped else {}
-

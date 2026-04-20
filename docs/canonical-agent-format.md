@@ -27,7 +27,7 @@ targets:
 model:
   codex: gpt-5.4
   claude: sonnet
-  opencode: anthropic/claude-sonnet-4-20250514
+  opencode: openai/gpt-5.4
 
 reasoning:
   codex: high
@@ -114,7 +114,7 @@ Tool-specific model preference.
 model:
   codex: gpt-5.4
   claude: sonnet
-  opencode: anthropic/claude-sonnet-4-20250514
+  opencode: openai/gpt-5.4
 ```
 
 Model names are intentionally not normalized because providers and tools use
@@ -189,4 +189,3 @@ The validator should check:
 - Permission values are one of `allow`, `ask`, or `deny`.
 - Overrides are mappings.
 - The Markdown body is not empty.
-

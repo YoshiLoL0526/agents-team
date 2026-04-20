@@ -10,7 +10,7 @@ targets:
 model:
   codex: gpt-5.4
   claude: sonnet
-  opencode: anthropic/claude-sonnet-4-20250514
+  opencode: openai/gpt-5.4
 
 reasoning:
   codex: high
@@ -41,11 +41,13 @@ overrides:
       - Bash
     disallowedTools: []
   opencode:
-    mode: subagent
+    mode: primary
     permission:
       edit: ask
       bash: ask
       webfetch: ask
+      task:
+        "*": deny
 ---
 
 You are the orchestrator for a team of AI agents.
@@ -60,4 +62,3 @@ findings instead of broad summaries.
 
 Your final output should make the current state obvious: what was decided, what
 was completed, what remains, and any risks that still need attention.
-

@@ -2,8 +2,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from rich.console import Console
+from rich.table import Table
 import typer
 
+from agents_team.diagnostics import DoctorCheck
 from agents_team.diagnostics import build_doctor_report
 from agents_team.installer import install_agents
 from agents_team.rendering import (
@@ -12,12 +15,16 @@ from agents_team.rendering import (
     render_root_agent,
     selected_tools,
 )
-from agents_team.schema import ValidationIssue
+from agents_team.schema import InstallResult, RenderedFile, ValidationIssue
 from agents_team.validation import ensure_tool, has_errors, load_and_validate
 
 app = typer.Typer(
     help="Install one canonical team of AI agents into Codex, Claude Code, and OpenCode."
 )
+
+console = Console()
+error_console = Console(stderr=True)
+
 
 @app.command("list")
 def list_agents(root: Path = typer.Option(Path("."), "--root", resolve_path=True)) -> None:
@@ -25,12 +32,17 @@ def list_agents(root: Path = typer.Option(Path("."), "--root", resolve_path=True
     _print_issues(issues, warnings_only=True)
 
     if not agents:
-        typer.echo("No agents found.")
+        _print_status("No agents found.", "warning")
         raise typer.Exit(0)
 
+    table = Table(title="Canonical agents", show_lines=False)
+    table.add_column("Agent", style="bold")
+    table.add_column("Targets")
+    table.add_column("Description", overflow="fold")
     for agent in sorted(agents, key=lambda item: item.id):
         targets = ", ".join(tool for tool in selected_tools("all") if agent.enabled_for(tool))
-        typer.echo(f"{agent.id}\t{targets}\t{agent.description}")
+        table.add_row(agent.id, targets, agent.description)
+    console.print(table)
 
 
 @app.command()
@@ -41,7 +53,7 @@ def validate(root: Path = typer.Option(Path("."), "--root", resolve_path=True)) 
     if has_errors(issues):
         raise typer.Exit(1)
 
-    typer.echo(f"Valid: {len(agents)} agent(s).")
+    _print_status(f"Validation passed: {len(agents)} agent(s) ready.", "success")
 
 
 @app.command()
@@ -69,39 +81,41 @@ def render(
 
     if root_agent:
         if tool not in {"codex", "claude"}:
-            typer.echo("--root-agent is currently supported only for codex and claude.", err=True)
+            _print_error("--root-agent is currently supported only for codex and claude.")
             raise typer.Exit(1)
         try:
             selected_root = find_agent(agents, root_agent, tool)
         except ValueError as exc:
-            typer.echo(str(exc), err=True)
+            _print_error(str(exc))
             raise typer.Exit(1) from exc
         rendered_root = render_root_agent(selected_root, agents, tool)
         if out:
             out.mkdir(parents=True, exist_ok=True)
             target = out / rendered_root.filename
             target.write_text(rendered_root.content, encoding="utf-8")
-            typer.echo(f"rendered {tool}/{rendered_root.filename} -> {target}")
+            _print_rendered_files([(rendered_root, target)])
             return
         typer.echo(rendered_root.content, nl=False)
         return
 
     rendered = render_agents(agents, tool, agent)
     if agent and not rendered:
-        typer.echo(f"Agent not found or not enabled for {tool}: {agent}", err=True)
+        _print_error(f"Agent not found or not enabled for {tool}: {agent}")
         raise typer.Exit(1)
 
     if out:
+        written: list[tuple[RenderedFile, Path]] = []
         for item in rendered:
             target_dir = out / item.tool
             target_dir.mkdir(parents=True, exist_ok=True)
             target = target_dir / item.filename
             target.write_text(item.content, encoding="utf-8")
-            typer.echo(f"rendered {item.tool}/{item.filename} -> {target}")
+            written.append((item, target))
+        _print_rendered_files(written)
         return
 
     if len(rendered) != 1:
-        typer.echo("Rendering multiple files requires --out.", err=True)
+        _print_error("Rendering multiple files requires --out.")
         raise typer.Exit(1)
 
     typer.echo(rendered[0].content, nl=False)
@@ -176,23 +190,16 @@ def doctor(
     try:
         report = build_doctor_report(root, tool, project, root_agent)
     except ValueError as exc:
-        typer.echo(str(exc), err=True)
+        _print_error(str(exc))
         raise typer.Exit(1) from exc
 
-    for check in report.checks:
-        typer.echo(f"{check.status}: {check.label}: {check.detail}")
+    _print_doctor_checks(report.checks)
 
     _print_issues(report.validation_issues)
 
     if report.install_results:
-        typer.echo("")
-        typer.echo("Install preview:")
-        for result in report.install_results:
-            typer.echo(
-                f"{result.action}: {result.rendered.tool}/{result.rendered.filename} -> {result.target_path}"
-            )
-            if result.message != "ok" and not result.message.startswith("dry"):
-                typer.echo(f"  {result.message}")
+        console.print()
+        _print_install_results(report.install_results, title="Install preview")
 
     if report.has_errors:
         raise typer.Exit(1)
@@ -222,15 +229,10 @@ def _install_or_update(
             root_agent=root_agent,
         )
     except ValueError as exc:
-        typer.echo(str(exc), err=True)
+        _print_error(str(exc))
         raise typer.Exit(1) from exc
 
-    for result in results:
-        typer.echo(
-            f"{result.action}: {result.rendered.tool}/{result.rendered.filename} -> {result.target_path}"
-        )
-        if result.message != "ok" and not result.message.startswith("dry"):
-            typer.echo(f"  {result.message}")
+    _print_install_results(results, title=f"{tool.title()} {'preview' if dry_run else 'installation'}")
 
 
 def _exit_if_invalid(issues: list[ValidationIssue]) -> None:
@@ -240,8 +242,98 @@ def _exit_if_invalid(issues: list[ValidationIssue]) -> None:
 
 
 def _print_issues(issues: list[ValidationIssue], warnings_only: bool = False) -> None:
-    for issue in issues:
-        if warnings_only and issue.level != "warning":
-            continue
-        location = f"{issue.file}: " if issue.file else ""
-        typer.echo(f"{issue.level.upper()}: {location}{issue.message}", err=True)
+    visible_issues = [
+        issue
+        for issue in issues
+        if not warnings_only or issue.level == "warning"
+    ]
+    if not visible_issues:
+        return
+
+    table = Table(title="Validation issues", show_lines=False)
+    table.add_column("Level", style="bold")
+    table.add_column("File")
+    table.add_column("Message", overflow="fold")
+    for issue in visible_issues:
+        level_style = "red" if issue.level == "error" else "yellow"
+        table.add_row(
+            f"[{level_style}]{issue.level.upper()}[/{level_style}]",
+            str(issue.file) if issue.file else "-",
+            issue.message,
+        )
+    error_console.print(table)
+
+
+def _print_doctor_checks(checks: list[DoctorCheck]) -> None:
+    table = Table(title="Doctor report", show_lines=False)
+    table.add_column("Status", style="bold")
+    table.add_column("Check")
+    table.add_column("Detail", overflow="fold")
+    for check in checks:
+        table.add_row(_styled_status(check.status), check.label, check.detail)
+    console.print(table)
+
+
+def _print_rendered_files(files: list[tuple[RenderedFile, Path]]) -> None:
+    table = Table(title="Rendered files", show_lines=False)
+    table.add_column("Tool", style="bold")
+    table.add_column("File")
+    table.add_column("Target", overflow="fold")
+    for rendered, target in files:
+        table.add_row(rendered.tool, rendered.filename, str(target))
+    console.print(table)
+    _print_status(f"Rendered {len(files)} file(s).", "success")
+
+
+def _print_install_results(results: list[InstallResult], *, title: str) -> None:
+    table = Table(title=title, show_lines=False)
+    table.add_column("Action", style="bold")
+    table.add_column("Tool")
+    table.add_column("File")
+    table.add_column("Target", overflow="fold")
+    table.add_column("Message", overflow="fold")
+
+    counts: dict[str, int] = {}
+    for result in results:
+        counts[result.action] = counts.get(result.action, 0) + 1
+        table.add_row(
+            _styled_action(result.action),
+            result.rendered.tool,
+            result.rendered.filename,
+            str(result.target_path),
+            "" if result.message in {"ok", "dry run"} else result.message,
+        )
+
+    console.print(table)
+    summary = ", ".join(f"{action}: {count}" for action, count in sorted(counts.items()))
+    _print_status(f"Completed {len(results)} operation(s): {summary}.", "success")
+
+
+def _print_status(message: str, level: str) -> None:
+    style = {
+        "success": "bold green",
+        "warning": "bold yellow",
+        "error": "bold red",
+    }.get(level, "bold")
+    console.print(message, style=style)
+
+
+def _styled_action(action: str) -> str:
+    if action in {"created", "updated", "would-created", "would-updated"}:
+        return f"[green]{action}[/green]"
+    if action == "skipped":
+        return f"[yellow]{action}[/yellow]"
+    return action
+
+
+def _styled_status(status: str) -> str:
+    style = {
+        "OK": "green",
+        "WARN": "yellow",
+        "ERROR": "red",
+    }.get(status, "white")
+    return f"[{style}]{status}[/{style}]"
+
+
+def _print_error(message: str) -> None:
+    error_console.print(message, style="bold red")

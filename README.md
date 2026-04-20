@@ -1,0 +1,146 @@
+# Agents Team
+
+Agents Team keeps one canonical team of AI agents in this repository and
+installs that team into multiple AI agent tools.
+
+Initial targets:
+
+- Codex
+- Claude Code
+- OpenCode
+
+The source format is Markdown with YAML frontmatter. Codex receives generated
+TOML files, while Claude Code and OpenCode receive generated Markdown files.
+
+## Status
+
+This project is in its first implementation phase. The current MVP supports:
+
+- Canonical agents in `agents/`.
+- Validation of required metadata and permissions.
+- Rendering native files for Codex, Claude Code, and OpenCode.
+- Global installation by default.
+- Project-local installation with `--project`.
+- Safe overwrites using a generated-file marker.
+- `--dry-run`, `--backup`, and `--force`.
+
+## Install For Development
+
+```bash
+pip install -e ".[dev]"
+```
+
+Or with `uv`:
+
+```bash
+uv sync --extra dev
+```
+
+## Commands
+
+List canonical agents:
+
+```bash
+agents-team list
+```
+
+Validate agents:
+
+```bash
+agents-team validate
+```
+
+Render one agent:
+
+```bash
+agents-team render codex reviewer
+agents-team render claude reviewer
+agents-team render opencode researcher
+```
+
+Render all agents into a directory:
+
+```bash
+agents-team render all --out generated/
+```
+
+Install globally:
+
+```bash
+agents-team install all
+agents-team install codex
+agents-team install claude
+agents-team install opencode
+```
+
+Install into a project:
+
+```bash
+agents-team install all --project .
+```
+
+Preview installation without writing files:
+
+```bash
+agents-team install all --dry-run
+```
+
+Update installed agents from the current repository:
+
+```bash
+agents-team update all
+```
+
+## Default Install Locations
+
+Global:
+
+```text
+Codex:       ~/.codex/agents/
+Claude Code: ~/.claude/agents/
+OpenCode:    ~/.config/opencode/agents/
+```
+
+Project:
+
+```text
+Codex:       <project>/.codex/agents/
+Claude Code: <project>/.claude/agents/
+OpenCode:    <project>/.opencode/agents/
+```
+
+## Canonical Agent Example
+
+```markdown
+---
+id: reviewer
+description: Reviews code for correctness, security, regressions, maintainability risks, and missing tests.
+
+targets:
+  codex: true
+  claude: true
+  opencode: true
+
+permissions:
+  read: allow
+  search: allow
+  edit: deny
+  write: deny
+  delete: deny
+  bash: ask
+  network: deny
+  webfetch: deny
+  mcp: ask
+---
+
+You are a reviewer agent.
+```
+
+See [docs](docs/README.md) for the design notes, format reference, adapter
+rules, permission model, and CLI behavior.
+
+## Tests
+
+```bash
+pytest
+```

@@ -48,6 +48,10 @@ overrides:
       webfetch: ask
       task:
         "*": deny
+        "builder": allow
+        "explorer": allow
+        "researcher": allow
+        "reviewer": allow
 ---
 
 You are the orchestrator for a team of AI agents.

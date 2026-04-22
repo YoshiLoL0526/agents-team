@@ -15,6 +15,9 @@ targets are Codex, Claude Code, and OpenCode.
   used by this repository.
 - [Tool Adapters](tool-adapters.md): how canonical agents map to Codex, Claude
   Code, and OpenCode.
+- [OpenCode Agent Implementation](opencode-agent-implementation.md): detailed
+  implementation contract for OpenCode primary agents, sub-agents, rendering,
+  installation, and verification.
 - [Permissions Model](permissions-model.md): portable permission vocabulary and
   adapter-specific translation rules.
 - [CLI Design](cli-design.md): command surface, flags, and expected behavior.
@@ -22,4 +25,3 @@ targets are Codex, Claude Code, and OpenCode.
   implementation conventions.
 - [Decision Log](decision-log.md): design decisions that should remain stable
   unless intentionally revisited.
-

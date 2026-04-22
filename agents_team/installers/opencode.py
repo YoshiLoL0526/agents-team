@@ -33,10 +33,10 @@ class OpenCodeAdapter:
         data = merge_dicts(data, agent.overrides.get(self.tool))
 
         return (
-            f"<!-- {GENERATED_MARKER} -->\n"
             "---\n"
             f"{yaml_frontmatter(data)}\n"
             "---\n\n"
+            f"<!-- {GENERATED_MARKER} -->\n\n"
             f"{body.strip()}\n"
         )
 

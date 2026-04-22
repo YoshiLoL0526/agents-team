@@ -14,10 +14,10 @@ files into OpenCode-native Markdown agent files.
 
 The expected OpenCode behavior is:
 
-- `orchestrator` is selectable as a primary agent.
-- `builder`, `explorer`, `researcher`, and `reviewer` are sub-agents.
+- `raidel-planner` is selectable as a primary agent.
+- `raidel-coder`, `raidel-scout`, `raidel-researcher`, and `raidel-auditor` are sub-agents.
 - Sub-agents are not selectable as main agents.
-- The primary orchestrator can invoke the allowed sub-agents through OpenCode's
+- The primary raidel-planner can invoke the allowed sub-agents through OpenCode's
   task permission system.
 - Users can still mention visible sub-agents directly with `@agent-name` unless
   a future config marks them as hidden.
@@ -41,10 +41,10 @@ Project install location:
 The filename becomes the OpenCode agent id. For example:
 
 ```text
-~/.config/opencode/agents/reviewer.md
+~/.config/opencode/agents/raidel-auditor.md
 ```
 
-creates an OpenCode agent named `reviewer`.
+creates an OpenCode agent named `raidel-auditor`.
 
 The frontmatter controls the agent metadata:
 
@@ -59,7 +59,7 @@ permission:
   webfetch: deny
 ---
 
-You are a reviewer agent.
+You are a raidel-auditor agent.
 ```
 
 The important OpenCode `mode` values are:
@@ -132,7 +132,7 @@ Example source file shape:
 
 ```markdown
 ---
-id: reviewer
+id: raidel-auditor
 description: Use proactively for code review focused on correctness, security, regressions, maintainability risks, and missing tests.
 
 targets:
@@ -161,7 +161,7 @@ overrides:
       webfetch: deny
 ---
 
-You are a reviewer agent.
+You are a raidel-auditor agent.
 ```
 
 OpenCode-specific native settings belong under:
@@ -226,7 +226,7 @@ Do not move `GENERATED_MARKER` above the opening `---` for OpenCode.
 
 | Canonical Field | OpenCode Output |
 | --- | --- |
-| `id` | Filename, such as `reviewer.md`. |
+| `id` | Filename, such as `raidel-auditor.md`. |
 | `description` | `description` frontmatter field. |
 | Markdown body | Markdown body after frontmatter. |
 | `model.opencode` | `model` frontmatter field. |
@@ -251,11 +251,11 @@ mode: subagent
 That default is intentional. Most canonical agents are helpers and should not be
 main selectable agents.
 
-The only current canonical primary OpenCode agent is `orchestrator`, configured
+The only current canonical primary OpenCode agent is `raidel-planner`, configured
 in:
 
 ```text
-agents/orchestrator.md
+agents/raidel-planner.md
 ```
 
 with:
@@ -283,16 +283,16 @@ If a helper agent appears as a primary agent in OpenCode, check these first:
 OpenCode can control which sub-agents a primary agent may invoke through
 `permission.task`.
 
-The orchestrator currently uses a deny-by-default task policy:
+The raidel-planner currently uses a deny-by-default task policy:
 
 ```yaml
 permission:
   task:
     "*": deny
-    builder: allow
-    explorer: allow
-    researcher: allow
-    reviewer: allow
+    raidel-coder: allow
+    raidel-scout: allow
+    raidel-researcher: allow
+    raidel-auditor: allow
 ```
 
 The order matters because OpenCode evaluates matching permission rules in order
@@ -301,11 +301,11 @@ specific allow rules.
 
 This policy means:
 
-- The orchestrator should not see arbitrary sub-agents as available task
+- The raidel-planner should not see arbitrary sub-agents as available task
   targets.
-- The orchestrator can invoke the known specialist team.
+- The raidel-planner can invoke the known specialist team.
 - Adding a new sub-agent requires adding a corresponding allow rule if the
-  orchestrator should be able to invoke it.
+  raidel-planner should be able to invoke it.
 
 Task permissions do not necessarily hide sub-agents from direct user mention.
 They control what the model can invoke through the Task tool. If a future
@@ -388,7 +388,7 @@ uv run agents-team install opencode --project <project-path>
 The installer writes one generated Markdown file per OpenCode-enabled canonical
 agent. It does not currently render a separate OpenCode root-instructions file.
 OpenCode primary-agent behavior is represented by `mode: primary` in the
-orchestrator's own agent file.
+raidel-planner's own agent file.
 
 ## Generated File Safety
 
@@ -425,18 +425,18 @@ opencode agent list
 Expected relevant entries:
 
 ```text
-builder (subagent)
-explorer (subagent)
-orchestrator (primary)
-researcher (subagent)
-reviewer (subagent)
+raidel-coder (subagent)
+raidel-scout (subagent)
+raidel-planner (primary)
+raidel-researcher (subagent)
+raidel-auditor (subagent)
 ```
 
 You can also inspect the installed files directly:
 
 ```powershell
-Get-Content $HOME\.config\opencode\agents\builder.md -TotalCount 12
-Get-Content $HOME\.config\opencode\agents\orchestrator.md -TotalCount 18
+Get-Content $HOME\.config\opencode\agents\raidel-coder.md -TotalCount 12
+Get-Content $HOME\.config\opencode\agents\raidel-planner.md -TotalCount 18
 ```
 
 The first line should be `---`. For sub-agents, the frontmatter should include:
@@ -445,7 +445,7 @@ The first line should be `---`. For sub-agents, the frontmatter should include:
 mode: subagent
 ```
 
-For the orchestrator, the frontmatter should include:
+For the raidel-planner, the frontmatter should include:
 
 ```yaml
 mode: primary
@@ -463,7 +463,7 @@ Important tests:
 
 - `test_renders_opencode_markdown`
 - `test_renders_opencode_coding_agent_model`
-- `test_renders_opencode_orchestrator_as_primary_agent`
+- `test_renders_opencode_raidel_planner_as_primary_agent`
 - `test_renders_opencode_agents_as_subagents_by_default`
 
 The key regression assertion is:
@@ -475,21 +475,21 @@ assert rendered.content.startswith("---\n")
 That assertion protects the frontmatter parsing contract. Keep it whenever the
 OpenCode renderer is changed.
 
-The orchestrator task policy is also covered by asserting the rendered
+The raidel-planner task policy is also covered by asserting the rendered
 `permission.task` map includes:
 
 ```python
 {
     "*": "deny",
-    "builder": "allow",
-    "explorer": "allow",
-    "researcher": "allow",
-    "reviewer": "allow",
+    "raidel-coder": "allow",
+    "raidel-scout": "allow",
+    "raidel-researcher": "allow",
+    "raidel-auditor": "allow",
 }
 ```
 
-If a new sub-agent is added and should be invokable by the orchestrator, update
-both `agents/orchestrator.md` and this test.
+If a new sub-agent is added and should be invokable by the raidel-planner, update
+both `agents/raidel-planner.md` and this test.
 
 ## Common Failure Modes
 
@@ -506,11 +506,11 @@ Most likely causes:
 Recommended checks:
 
 ```powershell
-Get-Content $HOME\.config\opencode\agents\builder.md -TotalCount 12
+Get-Content $HOME\.config\opencode\agents\raidel-coder.md -TotalCount 12
 opencode agent list
 ```
 
-### Orchestrator cannot invoke a sub-agent
+### Planner cannot invoke a sub-agent
 
 Most likely causes:
 

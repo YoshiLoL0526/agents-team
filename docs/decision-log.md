@@ -77,8 +77,8 @@ Rationale:
 
 ## 2026-04-20: Initial Agent Team
 
-Decision: The first canonical team includes `orchestrator`, `explorer`,
-`builder`, `reviewer`, and `researcher`.
+Decision: The first canonical team includes `raidel-planner`, `raidel-scout`,
+`raidel-coder`, `raidel-auditor`, and `raidel-researcher`.
 
 Rationale:
 

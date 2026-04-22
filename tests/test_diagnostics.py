@@ -17,7 +17,7 @@ def test_doctor_reports_valid_repository() -> None:
 def test_doctor_detects_project_install_conflicts(tmp_path: Path) -> None:
     target_dir = tmp_path / ".claude" / "agents"
     target_dir.mkdir(parents=True)
-    (target_dir / "reviewer.md").write_text("manual agent", encoding="utf-8")
+    (target_dir / "raidel-auditor.md").write_text("manual agent", encoding="utf-8")
 
     report = build_doctor_report(Path("."), "claude", tmp_path)
 
@@ -27,4 +27,3 @@ def test_doctor_detects_project_install_conflicts(tmp_path: Path) -> None:
         for check in report.checks
     )
     assert any(result.action == "skipped" for result in report.install_results)
-

@@ -13,11 +13,11 @@ The first supported tools are:
 
 The MVP includes five canonical agents:
 
-- `orchestrator`: coordinates work and integrates results.
-- `explorer`: inspects codebases and explains existing behavior.
-- `builder`: implements scoped changes and tests.
-- `reviewer`: reviews code for bugs, risks, and missing tests.
-- `researcher`: performs internet research and verifies current information.
+- `raidel-planner`: coordinates work and integrates results.
+- `raidel-scout`: inspects codebases and explains existing behavior.
+- `raidel-coder`: implements scoped changes and tests.
+- `raidel-auditor`: reviews code for bugs, risks, and missing tests.
+- `raidel-researcher`: performs internet research and verifies current information.
 
 ## Goals
 

@@ -7,11 +7,11 @@ patterns.
 
 ```text
 agents/
-  orchestrator.md
-  explorer.md
-  builder.md
-  reviewer.md
-  researcher.md
+  raidel-planner.md
+  raidel-scout.md
+  raidel-coder.md
+  raidel-auditor.md
+  raidel-researcher.md
 
 agents_team/
   __init__.py
@@ -190,9 +190,9 @@ Suggested data:
   "installed_at": "2026-04-20T00:00:00Z",
   "files": [
     {
-      "agent_id": "reviewer",
-      "source": "agents/reviewer.md",
-      "target": "~/.codex/agents/reviewer.toml",
+      "agent_id": "raidel-auditor",
+      "source": "agents/raidel-auditor.md",
+      "target": "~/.codex/agents/raidel-auditor.toml",
       "source_sha256": "..."
     }
   ]

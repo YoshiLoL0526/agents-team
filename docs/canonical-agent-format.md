@@ -7,16 +7,16 @@ Canonical agents live under:
 
 ```text
 agents/
-  reviewer.md
-  explorer.md
-  builder.md
+  raidel-auditor.md
+  raidel-scout.md
+  raidel-coder.md
 ```
 
 ## File Shape
 
 ```markdown
 ---
-id: reviewer
+id: raidel-auditor
 description: Reviews code for correctness, security, regressions, and missing tests.
 
 targets:
@@ -65,7 +65,7 @@ overrides:
       webfetch: ask
 ---
 
-You are a reviewer agent.
+You are a raidel-auditor agent.
 
 Review code like an owner. Prioritize correctness, security, behavioral
 regressions, and missing test coverage.

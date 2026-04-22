@@ -91,10 +91,10 @@ Examples:
 
 ```bash
 agents-team render codex
-agents-team render codex --root-agent orchestrator
-agents-team render claude --root-agent orchestrator
-agents-team render claude reviewer
-agents-team render opencode builder --out generated/
+agents-team render codex --root-agent raidel-planner
+agents-team render claude --root-agent raidel-planner
+agents-team render claude raidel-auditor
+agents-team render opencode raidel-coder --out generated/
 ```
 
 Expected behavior:
@@ -118,9 +118,9 @@ Examples:
 
 ```bash
 agents-team install codex
-agents-team install codex --root-agent orchestrator
+agents-team install codex --root-agent raidel-planner
 agents-team install claude
-agents-team install claude --root-agent orchestrator
+agents-team install claude --root-agent raidel-planner
 agents-team install opencode
 agents-team install all
 ```
@@ -143,8 +143,8 @@ Examples:
 ```bash
 agents-team update all
 agents-team update codex
-agents-team update codex --root-agent orchestrator
-agents-team update claude --root-agent orchestrator --project .
+agents-team update codex --root-agent raidel-planner
+agents-team update claude --root-agent raidel-planner --project .
 ```
 
 For MVP, `update` may share implementation with `install`.

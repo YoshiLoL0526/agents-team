@@ -9,11 +9,11 @@ def test_loads_repository_agents() -> None:
 
     assert not issues
     assert {agent.id for agent in agents} == {
-        "orchestrator",
-        "explorer",
-        "builder",
-        "reviewer",
-        "researcher",
+        "raidel-planner",
+        "raidel-scout",
+        "raidel-coder",
+        "raidel-auditor",
+        "raidel-researcher",
     }
 
 
@@ -22,4 +22,3 @@ def test_repository_agents_are_valid() -> None:
 
     assert [issue for issue in issues if issue.level == "error"] == []
     assert len(agents) == 5
-

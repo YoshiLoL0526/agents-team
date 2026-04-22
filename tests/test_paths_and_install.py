@@ -24,8 +24,8 @@ def test_global_codex_paths_respect_codex_home(tmp_path: Path, monkeypatch) -> N
 
 
 def test_install_skips_non_generated_file_without_force(tmp_path: Path) -> None:
-    rendered = RenderedFile("claude", "reviewer", "reviewer.md", "new content")
-    target = tmp_path / "reviewer.md"
+    rendered = RenderedFile("claude", "raidel-auditor", "raidel-auditor.md", "new content")
+    target = tmp_path / "raidel-auditor.md"
     target.write_text("manual content", encoding="utf-8")
 
     result = install_rendered_file(rendered, tmp_path)
@@ -35,8 +35,8 @@ def test_install_skips_non_generated_file_without_force(tmp_path: Path) -> None:
 
 
 def test_install_updates_generated_file(tmp_path: Path) -> None:
-    rendered = RenderedFile("claude", "reviewer", "reviewer.md", "new content")
-    target = tmp_path / "reviewer.md"
+    rendered = RenderedFile("claude", "raidel-auditor", "raidel-auditor.md", "new content")
+    target = tmp_path / "raidel-auditor.md"
     target.write_text(f"<!-- {GENERATED_MARKER} -->\nold", encoding="utf-8")
 
     result = install_rendered_file(rendered, tmp_path)
@@ -46,7 +46,7 @@ def test_install_updates_generated_file(tmp_path: Path) -> None:
 
 
 def test_install_updates_empty_existing_file_without_force(tmp_path: Path) -> None:
-    rendered = RenderedFile("codex", "orchestrator", "AGENTS.md", "generated content")
+    rendered = RenderedFile("codex", "raidel-planner", "AGENTS.md", "generated content")
     target = tmp_path / "AGENTS.md"
     target.write_text("", encoding="utf-8")
 
@@ -60,12 +60,12 @@ def test_install_codex_root_agent_to_project(tmp_path: Path) -> None:
     agents, issues = load_agents(Path("."))
     assert issues == []
 
-    results = install_agents(agents, "codex", project=tmp_path, root_agent="orchestrator")
+    results = install_agents(agents, "codex", project=tmp_path, root_agent="raidel-planner")
 
     root_result = next(result for result in results if result.rendered.filename == "AGENTS.md")
     assert root_result.action == "created"
     assert root_result.target_path == tmp_path / "AGENTS.md"
-    assert "Codex Root Orchestrator" in root_result.target_path.read_text(encoding="utf-8")
+    assert "Codex Root Planner" in root_result.target_path.read_text(encoding="utf-8")
 
 
 def test_install_codex_root_agent_skips_manual_project_agents_md(tmp_path: Path) -> None:
@@ -74,7 +74,7 @@ def test_install_codex_root_agent_skips_manual_project_agents_md(tmp_path: Path)
     target = tmp_path / "AGENTS.md"
     target.write_text("manual instructions", encoding="utf-8")
 
-    results = install_agents(agents, "codex", project=tmp_path, root_agent="orchestrator")
+    results = install_agents(agents, "codex", project=tmp_path, root_agent="raidel-planner")
 
     root_result = next(result for result in results if result.rendered.filename == "AGENTS.md")
     assert root_result.action == "skipped"
@@ -99,15 +99,15 @@ def test_install_invalid_codex_root_agent_writes_nothing(tmp_path: Path) -> None
 def test_install_codex_root_agent_skips_when_subagent_conflicts(tmp_path: Path) -> None:
     agents, issues = load_agents(Path("."))
     assert issues == []
-    subagent = tmp_path / ".codex" / "agents" / "builder.toml"
+    subagent = tmp_path / ".codex" / "agents" / "raidel-coder.toml"
     subagent.parent.mkdir(parents=True)
-    subagent.write_text("manual builder", encoding="utf-8")
+    subagent.write_text("manual raidel-coder", encoding="utf-8")
 
-    results = install_agents(agents, "codex", project=tmp_path, root_agent="orchestrator")
+    results = install_agents(agents, "codex", project=tmp_path, root_agent="raidel-planner")
 
-    builder_result = next(result for result in results if result.rendered.agent_id == "builder")
+    raidel_coder_result = next(result for result in results if result.rendered.agent_id == "raidel-coder")
     root_result = next(result for result in results if result.rendered.filename == "AGENTS.md")
-    assert builder_result.action == "skipped"
+    assert raidel_coder_result.action == "skipped"
     assert root_result.action == "skipped"
     assert "subagent conflicts" in root_result.message
     assert not (tmp_path / "AGENTS.md").exists()
@@ -117,21 +117,21 @@ def test_install_claude_root_agent_to_project(tmp_path: Path) -> None:
     agents, issues = load_agents(Path("."))
     assert issues == []
 
-    results = install_agents(agents, "claude", project=tmp_path, root_agent="orchestrator")
+    results = install_agents(agents, "claude", project=tmp_path, root_agent="raidel-planner")
 
     root_result = next(result for result in results if result.rendered.filename == "CLAUDE.md")
     assert root_result.action == "created"
     assert root_result.target_path == tmp_path / "CLAUDE.md"
-    assert "Claude Code Root Orchestrator" in root_result.target_path.read_text(encoding="utf-8")
-    assert not (tmp_path / ".claude" / "agents" / "orchestrator.md").exists()
-    assert (tmp_path / ".claude" / "agents" / "builder.md").exists()
+    assert "Claude Code Root Planner" in root_result.target_path.read_text(encoding="utf-8")
+    assert not (tmp_path / ".claude" / "agents" / "raidel-planner.md").exists()
+    assert (tmp_path / ".claude" / "agents" / "raidel-coder.md").exists()
 
 
 def test_install_all_root_agent_includes_codex_and_claude_roots(tmp_path: Path) -> None:
     agents, issues = load_agents(Path("."))
     assert issues == []
 
-    results = install_agents(agents, "all", project=tmp_path, root_agent="orchestrator")
+    results = install_agents(agents, "all", project=tmp_path, root_agent="raidel-planner")
 
     filenames = {result.rendered.tool: result.rendered.filename for result in results if result.rendered.filename in {"AGENTS.md", "CLAUDE.md"}}
     assert filenames == {"codex": "AGENTS.md", "claude": "CLAUDE.md"}

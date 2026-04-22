@@ -65,15 +65,15 @@ class ClaudeAdapter:
         )
         model = root_agent.model.get(self.tool)
         model_preference = (
-            f"Model preference: use `{model}` for this root orchestrator session "
+            f"Model preference: use `{model}` for this root planner session "
             "when the target tool supports selecting the main model.\n\n"
             if model
             else ""
         )
         return (
             f"<!-- {GENERATED_MARKER} -->\n"
-            f"# Claude Code Root Orchestrator\n\n"
-            "You are the default orchestrator for this Claude Code environment.\n\n"
+            f"# Claude Code Root Planner\n\n"
+            "You are the default planner for this Claude Code environment.\n\n"
             f"{model_preference}"
             f"{body.strip()}\n\n"
             "## Delegation Policy\n\n"

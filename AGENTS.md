@@ -37,7 +37,7 @@ agents-team render all --out generated/
 
 ## Coding Style & Naming Conventions
 
-Write idiomatic Python with 4-space indentation and type annotations for public functions and non-obvious data structures. Keep modules focused around one responsibility, following the current names such as `parser.py`, `rendering.py`, and `permissions.py`. Use `snake_case` for modules, functions, variables, and test files. Agent definition files in `agents/` use lowercase ids such as `builder.md` and `reviewer.md`.
+Write idiomatic Python with 4-space indentation and type annotations for public functions and non-obvious data structures. Keep modules focused around one responsibility, following the current names such as `parser.py`, `rendering.py`, and `permissions.py`. Use `snake_case` for modules, functions, variables, and test files. Agent definition files in `agents/` use lowercase ids such as `raidel-coder.md` and `raidel-auditor.md`.
 
 ## Testing Guidelines
 
@@ -45,7 +45,7 @@ Tests use `pytest` and Typer's `CliRunner` for CLI assertions. Place new tests i
 
 ## Commit & Pull Request Guidelines
 
-Recent history uses Conventional Commits, for example `feat(codex): support root agent install` and `fix(claude): install orchestrator as root instructions`. Keep commit subjects imperative and scoped when useful: `feat(cli): ...`, `fix(opencode): ...`, `test(rendering): ...`.
+Recent history uses Conventional Commits, for example `feat(codex): support root agent install` and `fix(claude): install raidel-planner as root instructions`. Keep commit subjects imperative and scoped when useful: `feat(cli): ...`, `fix(opencode): ...`, `test(rendering): ...`.
 
 Pull requests should include a short description, the commands run for verification, and any affected targets: Codex, Claude Code, or OpenCode. Link related issues when available. Include screenshots or terminal output only when CLI formatting or rendered output changes.
 

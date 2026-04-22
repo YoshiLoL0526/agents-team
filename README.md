@@ -61,9 +61,9 @@ agents-team doctor codex
 Render one agent:
 
 ```bash
-agents-team render codex reviewer
-agents-team render claude reviewer
-agents-team render opencode researcher
+agents-team render codex raidel-auditor
+agents-team render claude raidel-auditor
+agents-team render opencode raidel-researcher
 ```
 
 Render all agents into a directory:
@@ -77,9 +77,9 @@ Install globally:
 ```bash
 agents-team install all
 agents-team install codex
-agents-team install codex --root-agent orchestrator
+agents-team install codex --root-agent raidel-planner
 agents-team install claude
-agents-team install claude --root-agent orchestrator
+agents-team install claude --root-agent raidel-planner
 agents-team install opencode
 ```
 
@@ -99,8 +99,8 @@ Update installed agents from the current repository:
 
 ```bash
 agents-team update all
-agents-team update codex --root-agent orchestrator
-agents-team update claude --root-agent orchestrator
+agents-team update codex --root-agent raidel-planner
+agents-team update claude --root-agent raidel-planner
 ```
 
 ## Default Install Locations
@@ -129,7 +129,7 @@ OpenCode:    <project>/.opencode/agents/
 
 ```markdown
 ---
-id: reviewer
+id: raidel-auditor
 description: Reviews code for correctness, security, regressions, maintainability risks, and missing tests.
 
 targets:
@@ -154,7 +154,7 @@ permissions:
   mcp: ask
 ---
 
-You are a reviewer agent.
+You are a raidel-auditor agent.
 ```
 
 See [docs](docs/README.md) for the design notes, format reference, adapter

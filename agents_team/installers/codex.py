@@ -52,14 +52,14 @@ class CodexAdapter:
         subagents = [
             agent
             for agent in sorted(agents, key=lambda item: item.id)
-            if agent.enabled_for(self.tool)
+            if agent.enabled_for(self.tool) and agent.id != root_agent.id
         ]
         subagent_lines = "\n".join(
             f"- `{agent.id}`: {agent.description}" for agent in subagents
         )
         model = root_agent.model.get(self.tool)
         model_preference = (
-            f"Model preference: use `{model}` for this root orchestrator session "
+            f"Model preference: use `{model}` for this root planner session "
             "when the target tool supports selecting the main model.\n\n"
             if model
             else ""
@@ -67,8 +67,8 @@ class CodexAdapter:
 
         return (
             f"<!-- {GENERATED_MARKER} -->\n"
-            "# Codex Root Orchestrator\n\n"
-            "You are the default orchestrator for this Codex environment.\n\n"
+            "# Codex Root Planner\n\n"
+            "You are the default planner for this Codex environment.\n\n"
             f"{model_preference}"
             f"{body.strip()}\n\n"
             "## Delegation Policy\n\n"
@@ -87,9 +87,10 @@ class CodexAdapter:
             "## Available Subagents\n\n"
             f"{subagent_lines}\n\n"
             "Use these exact agent ids when spawning custom subagents. Prefer "
-            "`explorer` for read-only codebase mapping, `builder` for scoped "
-            "implementation, `reviewer` for correctness and regression review, and "
-            "`researcher` for current external information or documentation checks.\n"
+            "`raidel-scout` for read-only codebase mapping, `raidel-coder` for "
+            "scoped implementation, `raidel-auditor` for correctness and "
+            "regression review, and `raidel-researcher` for current external "
+            "information or documentation checks.\n"
         )
 
     def _sandbox_mode(self, agent: Agent) -> str | None:
